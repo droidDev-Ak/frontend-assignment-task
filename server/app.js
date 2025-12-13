@@ -16,6 +16,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 app.use(express.json({limit:'16kb'}))
 app.use(cookieParser());
 app.set("trust proxy", 1);
