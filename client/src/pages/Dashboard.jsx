@@ -109,11 +109,18 @@ const Dashboard = () => {
       setError("Failed to create task");
     }
   };
-
   const handleUpdateTask = async (e) => {
     e.preventDefault();
     try {
-      const res = await updateTask(editingTaskId, taskData);
+      // FIX: Ensure we aren't sending _id or other system fields
+      const payload = {
+        title: taskData.title,
+        description: taskData.description,
+        status: taskData.status,
+      };
+
+      const res = await updateTask(editingTaskId, payload);
+
       setTasks((prev) =>
         prev.map((t) => (t._id === editingTaskId ? res.task : t))
       );
@@ -122,6 +129,7 @@ const Dashboard = () => {
       resetForm();
     } catch (err) {
       console.error("Update failed:", err);
+      setError("Failed to update task. Please try again."); // Show error to user
     }
   };
 
@@ -142,18 +150,22 @@ const Dashboard = () => {
   const handleStatusToggle = async (task) => {
     const newStatus = task.status === "completed" ? "pending" : "completed";
 
+    // 1. Optimistic UI Update (Keep this, it's great)
     setTasks((prev) =>
       prev.map((t) => (t._id === task._id ? { ...t, status: newStatus } : t))
     );
 
     try {
-      await updateTask(task._id, { ...task, status: newStatus });
+      // 2. API Call - FIX: Send ONLY the status, not the whole task
+      await updateTask(task._id, { status: newStatus });
     } catch {
+      // 3. Revert if failed
       setTasks((prev) =>
         prev.map((t) =>
           t._id === task._id ? { ...t, status: task.status } : t
         )
       );
+      alert("Failed to update status"); // Add user feedback
     }
   };
 

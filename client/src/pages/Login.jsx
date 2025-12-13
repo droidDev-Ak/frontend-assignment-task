@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/auth.service";
 import Notification from "../components/Notification";
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
+  const [error, setError] = useState(""); // 🔴 error state
 
   const [formData, setFormData] = useState({
     email: "",
@@ -14,25 +14,26 @@ const Login = () => {
   });
 
   const handleChange = (e) => {
+    setError(""); // 🔥 typing start → error hata do
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login Data:", formData);
     try {
       const res = await loginUser(formData);
+
       if (!res) {
-        alert("Login Failed");
+        setError("Wrong password or email"); // 🔴 yahin show hoga
+        return;
       }
 
-      console.log("Login Successful:", res);
       setShowNotif(true);
       setTimeout(() => {
         navigate("/dashboard");
       }, 2000);
-    } catch (error) {
-      alert("Login Error:", error.message);
+    } catch (err) {
+      setError("Wrong password or email");
     }
   };
 
@@ -51,8 +52,7 @@ const Login = () => {
             <input
               type="email"
               name="email"
-              placeholder="john@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               onChange={handleChange}
               required
             />
@@ -65,16 +65,23 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none
+                ${error ? "border-red-500" : "border-gray-300"}`}
               onChange={handleChange}
               required
             />
+
+
+            {error && (
+              <p className="text-red-500 text-sm mt-1">
+                {error}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg"
           >
             Login
           </button>
@@ -82,14 +89,12 @@ const Login = () => {
 
         <p className="mt-6 text-center text-gray-600">
           Don’t have an account?{" "}
-          <Link
-            to="/"
-            className="text-blue-600 hover:underline font-medium cursor-pointer"
-          >
+          <Link to="/" className="text-blue-600 hover:underline font-medium">
             Register
           </Link>
         </p>
       </div>
+
       <Notification
         isVisible={showNotif}
         message="Login successful"

@@ -1,49 +1,77 @@
-/* eslint-disable no-unused-vars */
-import {  useState } from "react";
+import { useState } from "react";
 import { registerUser } from "../services/auth.service";
-import { Link } from "react-router-dom";
-import { getTasks } from "../services/task.service";
+import { Link, useNavigate } from "react-router-dom";
 import Notification from "../components/Notification";
-import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [showNotif, setShowNotif] = useState(false);
   const navigate = useNavigate();
+
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifMessage, setNotifMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
-  const [error, setError] = useState(null);
+  const [passwordError, setPasswordError] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const handleChange = (e) => {
-    if (e.target.name === "confirmPassword" || e.target.name === "password") {
-      setError(null);
+    const { name, value } = e.target;
+
+    // clear errors while typing
+    if (name === "password" || name === "confirmPassword") {
+      setPasswordError("");
     }
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (name === "email") {
+      setEmailError("");
+    }
+
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // password mismatch check
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match!");
+      setPasswordError("Passwords do not match");
       return;
     }
-    console.log("Password check");
+
     const { confirmPassword, ...dataToSubmit } = formData;
 
-    console.log("Register Data:", dataToSubmit);
     try {
-      const res = await registerUser(dataToSubmit);
+      setLoading(true);
+      await registerUser(dataToSubmit);
+
+      setNotifMessage("Registration successful");
       setShowNotif(true);
 
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (error) {
-      console.error("Registration Error:2", error.message);
+    } catch (err) {
+      const msg =
+        "User already registered , Please Login ";
+
+      // email already exists
+      if (
+        msg.toLowerCase().includes("exist") ||
+        msg.toLowerCase().includes("email")
+      ) {
+        setEmailError("Email already exists");
+        return;
+      }
+
+      setNotifMessage(msg);
+      setShowNotif(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +83,7 @@ const Register = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Name */}
           <div>
             <label className="block text-gray-600 mb-1 font-medium">
               Full Name
@@ -62,13 +91,13 @@ const Register = () => {
             <input
               type="text"
               name="name"
-              placeholder="John Doe"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               onChange={handleChange}
               required
             />
           </div>
 
+          {/* Email */}
           <div>
             <label className="block text-gray-600 mb-1 font-medium">
               Email Address
@@ -76,13 +105,17 @@ const Register = () => {
             <input
               type="email"
               name="email"
-              placeholder="john@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500
+                ${emailError ? "border-red-500" : "border-gray-300"}`}
               onChange={handleChange}
               required
             />
+            {emailError && (
+              <p className="text-red-500 text-sm mt-1">{emailError}</p>
+            )}
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-gray-600 mb-1 font-medium">
               Password
@@ -90,13 +123,14 @@ const Register = () => {
             <input
               type="password"
               name="password"
-              placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500
+                ${passwordError ? "border-red-500" : "border-gray-300"}`}
               onChange={handleChange}
               required
             />
           </div>
 
+          {/* Confirm Password */}
           <div>
             <label className="block text-gray-600 mb-1 font-medium">
               Confirm Password
@@ -104,34 +138,39 @@ const Register = () => {
             <input
               type="password"
               name="confirmPassword"
-              placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500
+                ${passwordError ? "border-red-500" : "border-gray-300"}`}
               onChange={handleChange}
               required
             />
+            {passwordError && (
+              <p className="text-red-500 text-sm mt-1">
+                {passwordError}
+              </p>
+            )}
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg disabled:opacity-60"
           >
-            Sign Up
+            {loading ? "Creating account..." : "Sign Up"}
           </button>
         </form>
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+
         <p className="mt-6 text-center text-gray-600">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 hover:underline font-medium"
-          >
+          <Link to="/login" className="text-blue-600 hover:underline">
             Login
           </Link>
         </p>
       </div>
+
       <Notification
         isVisible={showNotif}
-        message="Registration successful"
+        message={notifMessage}
         onClose={() => setShowNotif(false)}
       />
     </div>
