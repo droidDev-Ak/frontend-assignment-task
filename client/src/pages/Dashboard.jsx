@@ -10,6 +10,7 @@ import {
   updateTask,
 } from "../services/task.service";
 import TaskModal from "../components/TaskModal";
+import ConfirmModal from "../components/ConfirmModal.jsx";
 
 const formatTimeAgo = (dateStr) => {
   const date = new Date(dateStr);
@@ -36,6 +37,8 @@ const formatTimeAgo = (dateStr) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, load } = useAuth();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -133,8 +136,13 @@ const Dashboard = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) return;
+  const handleDelete = (id) => {
+    setTaskToDelete(id);
+    setShowConfirm(true);
+  };
+  const confirmDelete = async () => {
+    const id = taskToDelete;
+    if (!id) return;
 
     const previousTasks = [...tasks];
     setTasks((prev) => prev.filter((task) => task._id !== id));
@@ -144,28 +152,28 @@ const Dashboard = () => {
     } catch {
       setTasks(previousTasks);
       alert("Failed to delete task");
+    } finally {
+      setShowConfirm(false);
+      setTaskToDelete(null);
     }
   };
 
   const handleStatusToggle = async (task) => {
     const newStatus = task.status === "completed" ? "pending" : "completed";
 
-    // 1. Optimistic UI Update (Keep this, it's great)
     setTasks((prev) =>
       prev.map((t) => (t._id === task._id ? { ...t, status: newStatus } : t))
     );
 
     try {
-      // 2. API Call - FIX: Send ONLY the status, not the whole task
       await updateTask(task._id, { status: newStatus });
     } catch {
-      // 3. Revert if failed
       setTasks((prev) =>
         prev.map((t) =>
           t._id === task._id ? { ...t, status: task.status } : t
         )
       );
-      alert("Failed to update status"); // Add user feedback
+      alert("Failed to update status");
     }
   };
 
@@ -431,6 +439,16 @@ const Dashboard = () => {
         taskData={taskData}
         setTaskData={setTaskData}
         mode="edit"
+      />
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Delete task?"
+        message="This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowConfirm(false);
+          setTaskToDelete(null);
+        }}
       />
     </div>
   );
