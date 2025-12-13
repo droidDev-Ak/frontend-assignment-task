@@ -57,6 +57,11 @@ const TaskModal = ({
               name="title"
               value={taskData.title}
               onChange={handleChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
               placeholder="e.g. Finish dashboard UI"
               className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
