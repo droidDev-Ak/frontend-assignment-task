@@ -76,9 +76,11 @@ const Dashboard = () => {
   }, []);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) =>
-      task.title?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return tasks
+      .filter((task) => task && task.title)
+      .filter((task) =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
   }, [tasks, searchQuery]);
 
   const handleLogout = async () => {
@@ -101,6 +103,11 @@ const Dashboard = () => {
       setError("Title is required!");
       return;
     }
+    if (!taskData.description?.trim()) {
+  setError("Description is required!");
+  return;
+}
+
 
     try {
       const res = await createTask({
@@ -109,7 +116,9 @@ const Dashboard = () => {
         status: "pending",
       });
 
-      setTasks((prev) => [...prev, res.task]);
+      if (res?.task) {
+        setTasks((prev) => [...prev, res.task]);
+      }
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
