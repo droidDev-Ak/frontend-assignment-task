@@ -1,0 +1,10 @@
+MongoDB connected: ac-mlu24qs-shard-00-00.zdfutmv.mongodb.net
+Server is running on port 3000
+POST /api/auth/login
+GET /api/tasks
+GET /api/tasks
+POST /api/tasks
+PATCH /api/tasks/693d8e38549df14ea963232a
+POST /api/tasks
+DELETE /api/tasks/693d8e44549df14ea963232f
+PATCH /api/tasks/693d8e38549df14ea963232a
