@@ -103,7 +103,12 @@ const Dashboard = () => {
     }
 
     try {
-      const res = await createTask({ ...taskData, status: "pending" });
+      const res = await createTask({
+        ...taskData,
+        description: taskData.description?.trim() || "",
+        status: "pending",
+      });
+
       setTasks((prev) => [...prev, res.task]);
       setIsModalOpen(false);
       resetForm();
@@ -115,7 +120,6 @@ const Dashboard = () => {
   const handleUpdateTask = async (e) => {
     e.preventDefault();
     try {
-
       const payload = {
         title: taskData.title,
         description: taskData.description,
@@ -132,7 +136,7 @@ const Dashboard = () => {
       resetForm();
     } catch (err) {
       console.error("Update failed:", err);
-      setError("Failed to update task. Please try again.");  
+      setError("Failed to update task. Please try again.");
     }
   };
 
@@ -385,7 +389,7 @@ const Dashboard = () => {
                   {task.title}
                 </h3>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3 break-words">
-                  {task.description}
+                  {task.description || "No description"}
                 </p>
                 <div className="text-xs text-gray-400 mt-auto pt-4 border-t border-gray-50">
                   Created {formatTimeAgo(task.createdAt)}
