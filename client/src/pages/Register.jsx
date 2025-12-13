@@ -23,7 +23,7 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // clear errors while typing
+
     if (name === "password" || name === "confirmPassword") {
       setPasswordError("");
     }
@@ -37,7 +37,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // password mismatch check
+
     if (formData.password !== formData.confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
@@ -59,7 +59,7 @@ const Register = () => {
       const msg =
         "User already registered , Please Login ";
 
-      // email already exists
+
       if (
         msg.toLowerCase().includes("exist") ||
         msg.toLowerCase().includes("email")

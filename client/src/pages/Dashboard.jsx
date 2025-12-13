@@ -115,7 +115,7 @@ const Dashboard = () => {
   const handleUpdateTask = async (e) => {
     e.preventDefault();
     try {
-      // FIX: Ensure we aren't sending _id or other system fields
+
       const payload = {
         title: taskData.title,
         description: taskData.description,
@@ -132,7 +132,7 @@ const Dashboard = () => {
       resetForm();
     } catch (err) {
       console.error("Update failed:", err);
-      setError("Failed to update task. Please try again."); // Show error to user
+      setError("Failed to update task. Please try again.");  
     }
   };
 

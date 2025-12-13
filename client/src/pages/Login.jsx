@@ -6,7 +6,7 @@ import Notification from "../components/Notification";
 const Login = () => {
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
-  const [error, setError] = useState(""); // 🔴 error state
+  const [error, setError] = useState("");  
 
   const [formData, setFormData] = useState({
     email: "",
@@ -14,7 +14,7 @@ const Login = () => {
   });
 
   const handleChange = (e) => {
-    setError(""); // 🔥 typing start → error hata do
+    setError("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -24,7 +24,7 @@ const Login = () => {
       const res = await loginUser(formData);
 
       if (!res) {
-        setError("Wrong password or email"); // 🔴 yahin show hoga
+        setError("Wrong password or email");  
         return;
       }
 
