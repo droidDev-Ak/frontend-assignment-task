@@ -10,7 +10,6 @@ const TaskModal = ({
   if (!isOpen) return null;
 
   const handleChange = (e) => {
-
     const { name, value } = e.target;
     setTaskData((prev) => ({ ...prev, [name]: value }));
   };
@@ -52,7 +51,7 @@ const TaskModal = ({
 
         <form onSubmit={onSubmit} className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-gray-700">Title</label>
+            <label className="text-sm font-medium text-gray-700">Prompt</label>
             <input
               type="text"
               name="title"
@@ -63,11 +62,11 @@ const TaskModal = ({
                   e.preventDefault();
                 }
               }}
-              placeholder="e.g. Finish dashboard UI"
+              placeholder="e.g. Complete MongoDB project tomorrow and submit it"
               className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-
           </div>
+            {error && <p className="text-xs text-red-500 mt-1"> Description and Title are required  </p>}
 
           {/* <div>
             <label className="text-sm font-medium text-gray-700">
@@ -81,7 +80,6 @@ const TaskModal = ({
               rows={3}
               className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
-            {error && <p className="text-xs text-red-500 mt-1"> Description and Title are required  </p>}
           </div>
 
           <div>
@@ -116,7 +114,7 @@ const TaskModal = ({
             >
               {mode === "edit" ? "Save Changes" : "Create Task"}
             </button>
-          </div> 
+          </div>
         </form>
       </div>
     </div>

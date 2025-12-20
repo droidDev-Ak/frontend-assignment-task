@@ -1,18 +1,22 @@
 import { Task } from "../models/task.model.js";
+import taskParser from "../service/aiTaskParser.js";
 
 const createTask = async (req, res) => {
   try {
-    const { title, description, status } = req.body;
-
+    const { title,status  } = req.body;
     if (!title )
       throw new Error("Title and description are required");
+    const ai=await taskParser(title);
+    // console.log(ai);
+
+    
     console.log(req.body);
     const newTask = await Task.create({
-      title,
-      description:"hey there",
+      title:ai.title,
+      description:ai.description || "No description provided",
       status: status || "pending",
-      dueDate: req.body.dueDate
-        ? new Date(req.body.dueDate)
+      dueDate: ai.dueDate
+        ? new Date(ai.dueDate)
         : new Date(Date.now() + 24 * 60 * 60 * 1000),
       assignedTo: req.user._id,
       createdAt: new Date(),

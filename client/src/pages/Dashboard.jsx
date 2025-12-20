@@ -104,10 +104,7 @@ const Dashboard = () => {
       setError("Title is required!");
       return;
     }
-//     if (!taskData.description?.trim()) {
-//   setError("Description is required!");
-//   return;
-// }
+
 
 
     try {
