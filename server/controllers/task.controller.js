@@ -4,13 +4,16 @@ const createTask = async (req, res) => {
   try {
     const { title, description, status } = req.body;
 
-    if (!title || !description)
+    if (!title )
       throw new Error("Title and description are required");
-
+    console.log(req.body);
     const newTask = await Task.create({
       title,
-      description,
+      description:"hey there",
       status: status || "pending",
+      dueDate: req.body.dueDate
+        ? new Date(req.body.dueDate)
+        : new Date(Date.now() + 24 * 60 * 60 * 1000),
       assignedTo: req.user._id,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -47,7 +50,7 @@ const displayTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const { title, description, status } = req.body;
+    const { title, description, status, dueDate } = req.body;
 
     const updatedTask = await Task.findOneAndUpdate(
       { _id: req.params.id, assignedTo: req.user._id },
@@ -55,6 +58,7 @@ const updateTask = async (req, res) => {
         title,
         description,
         status,
+        dueDate,
         updatedAt: new Date(),
       },
       { new: true }

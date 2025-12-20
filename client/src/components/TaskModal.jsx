@@ -10,6 +10,7 @@ const TaskModal = ({
   if (!isOpen) return null;
 
   const handleChange = (e) => {
+
     const { name, value } = e.target;
     setTaskData((prev) => ({ ...prev, [name]: value }));
   };
@@ -68,7 +69,7 @@ const TaskModal = ({
 
           </div>
 
-          <div>
+          {/* <div>
             <label className="text-sm font-medium text-gray-700">
               Description
             </label>
@@ -83,6 +84,18 @@ const TaskModal = ({
             {error && <p className="text-xs text-red-500 mt-1"> Description and Title are required  </p>}
           </div>
 
+          <div>
+            <label htmlFor="dueDate">Due Date</label>
+            <input
+            type="date"
+            name="dueDate"
+            className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            value={taskData.dueDate}
+            />
+            
+          </div>
+*/}
           <div className="flex justify-end gap-3 pt-4 ">
             <button
               type="button"
@@ -103,7 +116,7 @@ const TaskModal = ({
             >
               {mode === "edit" ? "Save Changes" : "Create Task"}
             </button>
-          </div>
+          </div> 
         </form>
       </div>
     </div>

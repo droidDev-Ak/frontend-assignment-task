@@ -54,6 +54,7 @@ const Dashboard = () => {
     title: "",
     description: "",
     status: "pending",
+    dueDate:"",
   });
 
   useEffect(() => {
@@ -103,10 +104,10 @@ const Dashboard = () => {
       setError("Title is required!");
       return;
     }
-    if (!taskData.description?.trim()) {
-  setError("Description is required!");
-  return;
-}
+//     if (!taskData.description?.trim()) {
+//   setError("Description is required!");
+//   return;
+// }
 
 
     try {
@@ -296,11 +297,11 @@ const Dashboard = () => {
             Loading tasks...
           </div>
         ) : filteredTasks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-">
             {filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col h-full"
+                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col h-full "
               >
                 <div className="flex justify-between items-start mb-4">
                   <span
@@ -400,8 +401,10 @@ const Dashboard = () => {
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3 break-words">
                   {task.description || "No description"}
                 </p>
-                <div className="text-xs text-gray-400 mt-auto pt-4 border-t border-gray-50">
-                  Created {formatTimeAgo(task.createdAt)}
+                <div className="text-xs w-full  flex flex-row justify-between text-gray-400 mt-auto pt-4 border-t border-gray-50">
+                  <span className="block"> Created {formatTimeAgo(task.createdAt)}</span>
+                  <span  className="block"> Due {new Date(task.dueDate).toLocaleDateString()}</span>
+
                 </div>
               </div>
             ))}
