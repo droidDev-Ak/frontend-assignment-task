@@ -40,7 +40,8 @@ const Dashboard = () => {
   const { user, load } = useAuth();
   const [showConfirm, setShowConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
-
+  const [isFilled, setIsFilled] = useState("");
+  const [isHovered, setIsHovered] = useState("");
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,6 +58,7 @@ const Dashboard = () => {
     description: "",
     status: "pending",
     dueDate: "",
+    bookmark: false,
   });
 
   useEffect(() => {
@@ -82,7 +84,8 @@ const Dashboard = () => {
     return tasks
       .filter((task) => task && task.title)
       .filter((task) => {
-        const matchesFilter = filter === "all" || task.status === filter;
+        console.log("Filtering task:", task.status);
+        const matchesFilter = filter === "all" || task.status === filter || (filter==="bookmark"  && task.bookmark);
 
         const matchesSearch = task.title
           .toLowerCase()
@@ -130,17 +133,33 @@ const Dashboard = () => {
       setError("Failed to create task");
     }
   };
+  const handleImportant = async (task) => {
+    try {
+      const payload = {
+        bookmark: !task.bookmark,
+      };
+
+      const res = await updateTask(task._id, payload);
+
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? res.task : t)));
+    } catch (err) {
+      console.error("Bookmark update failed", err);
+    }
+  };
   const handleUpdateTask = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     try {
       const payload = {
         title: taskData.title,
         description: taskData.description,
-        dueDate:taskData.dueDate,
+        dueDate: taskData.dueDate,
         status: taskData.status,
+        bookmark: taskData.bookmark,
       };
+      console.log("payload", payload);
 
       const res = await updateTask(editingTaskId, payload);
+      console.log("payload res", res);
 
       setTasks((prev) =>
         prev.map((t) => (t._id === editingTaskId ? res.task : t))
@@ -288,6 +307,7 @@ const Dashboard = () => {
               </option>
               <option value="pending">Pending</option>
               <option value="completed">Completed</option>
+              <option value="bookmark">Bookmark </option>
             </select>
           </div>
 
@@ -330,6 +350,8 @@ const Dashboard = () => {
                 <div
                   key={task._id}
                   className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col h-full "
+                  onMouseEnter={() => setIsHovered(task._id)}
+                  onMouseLeave={() => setIsHovered("")}
                 >
                   <div className="flex justify-between items-start mb-4">
                     <span
@@ -422,6 +444,27 @@ const Dashboard = () => {
                           ></path>
                         </svg>
                       </button>
+                      {isHovered === task._id && (
+                        <div
+                          className="object-cover"
+                          onClick={() => handleImportant(task)}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`w-6 h-6 transition-colors ${
+                              task.bookmark
+                                ? "fill-yellow-500"
+                                : " fill-gray-400"
+                            }  text-yellow-500`}
+                          >
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-gray-800 mb-2 break-words">

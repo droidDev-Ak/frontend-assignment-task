@@ -26,6 +26,10 @@ const taskSchema=new mongoose.Schema({
     dueDate:{
         type:Date,
         
+    },
+    bookmark:{
+        type:Boolean,
+        default:false,
     }
 
 

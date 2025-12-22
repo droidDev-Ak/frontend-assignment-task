@@ -66,34 +66,37 @@ const TaskModal = ({
               className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-            {error && <p className="text-xs text-red-500 mt-1"> Input is  required  </p>}
+          {error && (
+            <p className="text-xs text-red-500 mt-1"> Input is required </p>
+          )}
 
-          { mode=="edit" && <div>
-            <label className="text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={taskData.description}
-              onChange={handleChange}
-              placeholder="Optional details about the task…"
-              rows={3}
-              className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-}
-
-          <div>
-            <label htmlFor="dueDate">Due Date</label>
-            <input
-            type="date"
-            name="dueDate"
-            className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleChange}
-            value={taskData.dueDate}
-            />
-            
-          </div>
+          {mode == "edit" && (
+            <>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={taskData.description}
+                  onChange={handleChange}
+                  placeholder="Optional details about the task…"
+                  rows={3}
+                  className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="dueDate">Due Date</label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  className="mt-1 w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={handleChange}
+                  value={taskData.dueDate}
+                />
+              </div>{" "}
+            </>
+          )}
 
           <div className="flex justify-end gap-3 pt-4 ">
             <button
