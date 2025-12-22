@@ -136,6 +136,7 @@ const Dashboard = () => {
       const payload = {
         title: taskData.title,
         description: taskData.description,
+        dueDate:taskData.dueDate,
         status: taskData.status,
       };
 
