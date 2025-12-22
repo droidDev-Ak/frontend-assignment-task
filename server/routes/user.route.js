@@ -7,10 +7,13 @@ import {
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 
+
 const userRouter = Router();
 
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
+
+
 
 userRouter.use(verifyJWT);
 

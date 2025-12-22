@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext.jsx";
+
 import { logoutUser } from "../services/auth.service.js";
 
 import {
@@ -11,6 +11,7 @@ import {
 } from "../services/task.service";
 import TaskModal from "../components/TaskModal";
 import ConfirmModal from "../components/ConfirmModal.jsx";
+import { useAuth } from "../AuthContext.jsx";
 
 const formatTimeAgo = (dateStr) => {
   const date = new Date(dateStr);
@@ -49,12 +50,13 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [filter, setFilter] = useState("all");
 
   const [taskData, setTaskData] = useState({
     title: "",
     description: "",
     status: "pending",
-    dueDate:"",
+    dueDate: "",
   });
 
   useEffect(() => {
@@ -79,10 +81,16 @@ const Dashboard = () => {
   const filteredTasks = useMemo(() => {
     return tasks
       .filter((task) => task && task.title)
-      .filter((task) =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  }, [tasks, searchQuery]);
+      .filter((task) => {
+        const matchesFilter = filter === "all" || task.status === filter;
+
+        const matchesSearch = task.title
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+
+        return matchesFilter && matchesSearch;
+      });
+  }, [tasks, searchQuery, filter]);
 
   const handleLogout = async () => {
     try {
@@ -101,11 +109,9 @@ const Dashboard = () => {
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (!taskData.title?.trim()) {
-      setError("Title is required!");
+      setError("Input is required!");
       return;
     }
-
-
 
     try {
       const res = await createTask({
@@ -198,6 +204,10 @@ const Dashboard = () => {
     setEditModalOpen(true);
   };
 
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm sticky top-0 z-20">
@@ -237,13 +247,13 @@ const Dashboard = () => {
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <p className="text-sm text-gray-500">Completed</p>
-            <p className="text-3xl font-bold text-green-500">
+            <p className="text-3xl font-bold text-green-500 ">
               {tasks.filter((t) => t.status === "completed").length}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+        <div className="flex flex-col  sm:flex-row justify-between items-center gap-4 mb-8">
           <div className="relative w-full sm:w-96">
             <input
               type="text"
@@ -265,6 +275,21 @@ const Dashboard = () => {
               ></path>
             </svg>
           </div>
+          <div>
+            Filters
+            <select
+              value={filter}
+              onChange={handleFilterChange}
+              className="ml-2 p-2 border border-gray-200 rounded-lg"
+            >
+              <option value="all" defaultChecked>
+                All
+              </option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
           <button
             onClick={() => {
               resetForm();
@@ -293,38 +318,77 @@ const Dashboard = () => {
           <div className="text-center py-20 text-gray-500">
             Loading tasks...
           </div>
-        ) : filteredTasks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-">
-            {filteredTasks.map((task) => (
-              <div
-                key={task._id}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col h-full "
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={`px-3 py-1 text-xs font-bold tracking-wide rounded-full ${
-                      task.status === "completed"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-orange-100 text-orange-700"
-                    }`}
-                  >
-                    {task.status.toUpperCase()}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleStatusToggle(task)}
-                      title={
+        ) : filteredTasks.length > 0 || filter.length !== "all" ? (
+          <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTasks.map((task) => {
+              const currentTime = new Date();
+              const isOverdue =
+                task.status !== "completed" &&
+                new Date(task.dueDate) < currentTime;
+              return (
+                <div
+                  key={task._id}
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col h-full "
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span
+                      className={`px-3 py-1 text-xs font-bold tracking-wide rounded-full ${
                         task.status === "completed"
-                          ? "Mark as Pending"
-                          : "Mark as Completed"
-                      }
-                      className={`transition ${
-                        task.status === "completed"
-                          ? "text-orange-400 hover:text-orange-600"
-                          : "text-green-500 hover:text-green-700"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-orange-100 text-orange-700"
                       }`}
                     >
-                      {task.status === "completed" ? (
+                      {task.status.toUpperCase()}
+                    </span>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleStatusToggle(task)}
+                        title={
+                          task.status === "completed"
+                            ? "Mark as Pending"
+                            : "Mark as Completed"
+                        }
+                        className={`transition ${
+                          task.status === "completed"
+                            ? "text-orange-400  hover:text-orange-600"
+                            : "text-green-500 hover:text-green-700"
+                        }`}
+                      >
+                        {task.status === "completed" ? (
+                          <svg
+                            className="w-5 h-5  "
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            ></path>
+                          </svg>
+                        ) : (
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => openEditModal(task)}
+                        className="text-gray-400 hover:text-blue-500 transition"
+                      >
                         <svg
                           className="w-5 h-5"
                           fill="none"
@@ -335,10 +399,14 @@ const Dashboard = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                           ></path>
                         </svg>
-                      ) : (
+                      </button>
+                      <button
+                        onClick={() => handleDelete(task._id)}
+                        className="text-gray-400 hover:text-red-500 transition"
+                      >
                         <svg
                           className="w-5 h-5"
                           fill="none"
@@ -349,62 +417,37 @@ const Dashboard = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                           ></path>
                         </svg>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => openEditModal(task)}
-                      className="text-gray-400 hover:text-blue-500 transition"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        ></path>
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(task._id)}
-                      className="text-gray-400 hover:text-red-500 transition"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        ></path>
-                      </svg>
-                    </button>
+                      </button>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2 break-words">
+                    {task.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3 break-words">
+                    {task.description || "No description"}
+                  </p>
+                  <div className="text-xs w-full  flex flex-row justify-between text-gray-400 mt-auto pt-4 border-t border-gray-50">
+                    <span className="block">
+                      {" "}
+                      Created {formatTimeAgo(task.createdAt)}
+                    </span>
+                    {!isOverdue ? (
+                      <span className="block">
+                        {" "}
+                        Due {new Date(task.dueDate).toLocaleDateString()}
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 text-xs font-bold tracking-wide rounded-full bg-red-100 text-red-700 border border-red-200">
+                        OVERDUE
+                      </span>
+                    )}
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-gray-800 mb-2 break-words">
-                  {task.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3 break-words">
-                  {task.description || "No description"}
-                </p>
-                <div className="text-xs w-full  flex flex-row justify-between text-gray-400 mt-auto pt-4 border-t border-gray-50">
-                  <span className="block"> Created {formatTimeAgo(task.createdAt)}</span>
-                  <span  className="block"> Due {new Date(task.dueDate).toLocaleDateString()}</span>
-
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">

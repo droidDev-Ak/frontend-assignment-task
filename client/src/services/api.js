@@ -15,12 +15,13 @@ export const apiRequest = async (endpoint, method, data=null) => {
   }
 
   const res = await fetch(`${BASE_APP_URL}/${endpoint}`, { ...options });
-
+  console.log(data)
 
   const result = await res.json();
 
   if (!result) {
     throw new Error(result.message || "API Error");
   }
+  console.log("API Result:", result);
   return result;
 };
